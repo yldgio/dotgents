@@ -88,20 +88,33 @@ def sync_cmd(
             action = "Would create" if dry_run else "Created"
             console.print(f"  {action} [dim]{rel_path}[/dim]")
 
-    # Handle pruning
-    if prune and not dry_run:
-        from agent_scaffold.generators import load_generated_tracking, save_generated_tracking
+    # Convert generated paths to relative strings for tracking
+    current = {str(p.relative_to(root)).replace("\\", "/") for p in all_generated}
+
+    # Handle pruning - remove files that were previously generated but no longer needed
+    if prune:
+        from agent_scaffold.generators import load_generated_tracking
         
         previous = load_generated_tracking(root)
-        current = {str(p.relative_to(root)) for p in all_generated}
-        
         stale = previous - current
-        for stale_path in sorted(stale):
-            full_path = root / stale_path
-            if full_path.exists():
-                full_path.unlink()
-                console.print(f"  Removed [dim]{stale_path}[/dim]")
         
+        if stale:
+            console.print()
+            console.print("Pruning stale files...")
+            for stale_path in sorted(stale):
+                full_path = root / stale_path
+                if full_path.exists():
+                    if dry_run:
+                        console.print(f"  Would remove [dim]{stale_path}[/dim]")
+                    else:
+                        full_path.unlink()
+                        console.print(f"  Removed [dim]{stale_path}[/dim]")
+                        # Also remove empty parent directories
+                        _cleanup_empty_dirs(full_path.parent, root)
+
+    # Always save tracking file (unless dry-run)
+    if not dry_run:
+        from agent_scaffold.generators import save_generated_tracking
         save_generated_tracking(root, current)
 
     # Summary
@@ -110,3 +123,15 @@ def sync_cmd(
         console.print(f"[yellow]Would generate {len(all_generated)} files[/yellow]")
     else:
         console.print(f"[green]Generated {len(all_generated)} files[/green]")
+
+
+def _cleanup_empty_dirs(directory: Path, root: Path) -> None:
+    """Remove empty directories up to but not including root."""
+    try:
+        while directory != root and directory.is_dir():
+            if any(directory.iterdir()):
+                break  # Directory not empty
+            directory.rmdir()
+            directory = directory.parent
+    except OSError:
+        pass  # Ignore errors during cleanup
