@@ -50,13 +50,18 @@ class OpenCodeGenerator(BaseGenerator):
         """Generate the opencode.json configuration file."""
         config_path = self.root / self.config.config_file
 
-        # Prepare instructions globs
+        # Build the configuration object
+        config: dict = {
+            "$schema": "https://opencode.ai/config.json",
+        }
+
+        # Add instructions globs
         instructions_globs = [
             f"{self.manifest.paths.instructions_dir}/**/*.md",
         ]
+        config["instructions"] = instructions_globs
 
-        # Prepare agents data for template
-        agents_data = []
+        # Add agents
         for agent in sorted(self.manifest.artifacts.agents, key=lambda a: a.id):
             # Check if this agent is enabled for opencode
             agent_targets = agent.targets
@@ -65,41 +70,31 @@ class OpenCodeGenerator(BaseGenerator):
                 if hasattr(override, "enabled") and not override.enabled:
                     continue
             
-            # Build agent data
-            agent_data = {
-                "id": agent.id,
-                "prompt_file": agent.prompt_file,
-                "model": None,
-                "mode": None,
-                "temperature": None,
-                "steps": None,
-            }
+            # Build agent config
+            agent_key = f"agent.{agent.id}"
+            agent_config: dict = {}
+            
+            if agent.prompt_file:
+                agent_config["prompt"] = {"file": f"./{agent.prompt_file}"}
             
             # Add overrides if present
             if "opencode" in agent_targets:
                 override = agent_targets["opencode"]
                 if hasattr(override, "model") and override.model:
-                    agent_data["model"] = override.model
+                    agent_config["model"] = override.model
                 if hasattr(override, "mode") and override.mode:
-                    agent_data["mode"] = override.mode
+                    agent_config["mode"] = override.mode
                 if hasattr(override, "temperature") and override.temperature is not None:
-                    agent_data["temperature"] = override.temperature
+                    agent_config["temperature"] = override.temperature
                 if hasattr(override, "steps") and override.steps is not None:
-                    agent_data["steps"] = override.steps
+                    agent_config["steps"] = override.steps
 
-            # Only add if there's at least a prompt_file
-            if agent_data["prompt_file"] or agent_data["model"] or agent_data["mode"] or agent_data["temperature"] is not None or agent_data["steps"] is not None:
-                agents_data.append(agent_data)
-
-        # Render template
-        content = render_template(
-            "opencode/opencode.json.j2",
-            instructions=instructions_globs,
-            agents=agents_data,
-        )
+            if agent_config:
+                config[agent_key] = agent_config
 
         if not dry_run:
             ensure_dir(config_path.parent)
+            content = json.dumps(config, indent=2)
             config_path.write_text(content, encoding="utf-8")
 
         return config_path
