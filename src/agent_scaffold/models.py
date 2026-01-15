@@ -1,7 +1,7 @@
 """Pydantic models for the manifest schema v1."""
 
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -113,6 +113,21 @@ class SkillArtifact(BaseModel):
     targets: dict[str, CopilotTargetOverride] = Field(default_factory=dict)
 
 
+class CommandArtifact(BaseModel):
+    """OpenCode slash command artifact."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    id: str
+    canonical_file: str = Field(alias="canonicalFile")
+    description: str = ""
+    user_input: Literal["required", "optional", "none"] = Field(
+        default="optional",
+        alias="userInput",
+    )
+    targets: dict[str, OpenCodeTargetOverride] = Field(default_factory=dict)
+
+
 # =============================================================================
 # Target Configuration Models
 # =============================================================================
@@ -182,6 +197,7 @@ class ArtifactsConfig(BaseModel):
     agents: list[AgentArtifact] = Field(default_factory=list)
     instructions: list[InstructionArtifact] = Field(default_factory=list)
     skills: list[SkillArtifact] = Field(default_factory=list)
+    commands: list[CommandArtifact] = Field(default_factory=list)
 
 
 class Manifest(BaseModel):

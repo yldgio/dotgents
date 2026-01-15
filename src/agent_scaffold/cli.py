@@ -35,7 +35,7 @@ def main(ctx: click.Context, root: Path) -> None:
 
 
 # Import and register commands
-from agent_scaffold.commands.add import add_agent, add_instruction, add_prompt, add_skill
+from agent_scaffold.commands.add import add_agent, add_command, add_instruction, add_prompt, add_skill
 from agent_scaffold.commands.doctor import doctor_cmd
 from agent_scaffold.commands.init import init_cmd
 from agent_scaffold.commands.sync import sync_cmd
@@ -45,6 +45,7 @@ main.add_command(add_prompt, name="add-prompt")
 main.add_command(add_agent, name="add-agent")
 main.add_command(add_instruction, name="add-instruction")
 main.add_command(add_skill, name="add-skill")
+main.add_command(add_command, name="add-command")
 main.add_command(sync_cmd, name="sync")
 main.add_command(doctor_cmd, name="doctor")
 
