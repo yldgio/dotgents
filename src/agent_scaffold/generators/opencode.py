@@ -66,7 +66,7 @@ class OpenCodeGenerator(BaseGenerator):
             command_targets = command.targets
             if "opencode" in command_targets:
                 override = command_targets["opencode"]
-                if hasattr(override, "enabled") and not override.enabled:
+                if not override.enabled:
                     continue
 
             # Build command config
@@ -88,7 +88,7 @@ class OpenCodeGenerator(BaseGenerator):
             agent_targets = agent.targets
             if "opencode" in agent_targets:
                 override = agent_targets["opencode"]
-                if hasattr(override, "enabled") and not override.enabled:
+                if not override.enabled:
                     continue
             
             # Build agent config
