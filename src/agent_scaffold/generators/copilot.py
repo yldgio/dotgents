@@ -224,10 +224,20 @@ class CopilotGenerator(BaseGenerator):
 
         # Generate repo-wide instructions file
         if repo_instruction_refs:
+            # Prepare instructions with formatted titles
+            instructions_with_titles = [
+                {
+                    "id": inst.id,
+                    "title": inst.id.replace("-", " ").title(),
+                    "canonical_file": inst.canonical_file,
+                }
+                for inst in repo_instruction_refs
+            ]
+            
             # Render template
             content = render_template(
                 "copilot/copilot-instructions.md.j2",
-                instructions=repo_instruction_refs,
+                instructions=instructions_with_titles,
             )
 
             if not dry_run:

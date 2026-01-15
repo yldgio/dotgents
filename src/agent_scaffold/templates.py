@@ -1,8 +1,9 @@
 """Template rendering utilities."""
 
-from pathlib import Path
+from jinja2 import Environment, PackageLoader
 
-from jinja2 import Environment, PackageLoader, select_autoescape
+# Cache the Jinja2 environment for efficiency
+_template_env: Environment | None = None
 
 
 def get_template_env() -> Environment:
@@ -11,12 +12,15 @@ def get_template_env() -> Environment:
     Returns:
         Configured Jinja2 environment
     """
-    return Environment(
-        loader=PackageLoader("agent_scaffold", "templates"),
-        autoescape=select_autoescape(),
-        trim_blocks=True,
-        lstrip_blocks=True,
-    )
+    global _template_env
+    if _template_env is None:
+        _template_env = Environment(
+            loader=PackageLoader("agent_scaffold", "templates"),
+            autoescape=False,  # Disable autoescape for Markdown files
+            trim_blocks=True,
+            lstrip_blocks=True,
+        )
+    return _template_env
 
 
 def render_template(template_path: str, **context: object) -> str:
