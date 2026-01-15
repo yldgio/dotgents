@@ -80,7 +80,22 @@ def sample_manifest(tmp_project: Path):
         )
     )
 
-    # Add an instruction
+    # Add a repo-scoped instruction
+    repo_instruction_file = tmp_project / ".agents/instructions/repo-default.md"
+    repo_instruction_file.write_text("# Repository Default\n\nDefault instructions.")
+    manifest.artifacts.instructions.append(
+        InstructionArtifact(
+            id="repo-default",
+            scope=InstructionScope.REPO,
+            canonical_file=".agents/instructions/repo-default.md",
+            targets={
+                "copilot-vscode": CopilotTargetOverride(enabled=True),
+                "copilot-cli": CopilotTargetOverride(enabled=True),
+            },
+        )
+    )
+
+    # Add a path-scoped instruction
     instruction_file = tmp_project / ".agents/instructions/typescript.md"
     instruction_file.write_text("# TypeScript Guidelines\n\nUse strict mode.")
     manifest.artifacts.instructions.append(
