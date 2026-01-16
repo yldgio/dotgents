@@ -45,7 +45,7 @@ def get_generator(
     target_config: OpenCodeTarget | CopilotTarget,
     manifest: Manifest,
     root: Path,
-) -> "BaseGenerator | None":
+) -> BaseGenerator | None:
     """Get the appropriate generator for a target.
 
     Args:
