@@ -125,9 +125,24 @@ class OpenCodeGenerator(BaseGenerator):
         """Generate the AGENTS.md rules index file."""
         agents_md_path = self.root / self.config.rules_index_file
 
-        # Prepare data for template
-        instructions_data = sorted(self.manifest.artifacts.instructions, key=lambda i: i.id)
-        agents_data = sorted(self.manifest.artifacts.agents, key=lambda a: a.id)
+        # Prepare data for template - filter by opencode enablement
+        instructions_data = []
+        for instruction in sorted(self.manifest.artifacts.instructions, key=lambda i: i.id):
+            # Check if this instruction is enabled for opencode
+            if "opencode" in instruction.targets:
+                override = instruction.targets["opencode"]
+                if not override.enabled:
+                    continue
+            instructions_data.append(instruction)
+        
+        agents_data = []
+        for agent in sorted(self.manifest.artifacts.agents, key=lambda a: a.id):
+            # Check if this agent is enabled for opencode
+            if "opencode" in agent.targets:
+                override = agent.targets["opencode"]
+                if not override.enabled:
+                    continue
+            agents_data.append(agent)
 
         # Render template
         content = render_template(
