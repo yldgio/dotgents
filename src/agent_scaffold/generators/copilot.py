@@ -4,6 +4,7 @@ from pathlib import Path
 
 from agent_scaffold.generators.base import BaseGenerator
 from agent_scaffold.models import CopilotTarget, InstructionScope
+from agent_scaffold.templates import render_template
 from agent_scaffold.utils import ensure_dir
 
 
@@ -125,29 +126,13 @@ class CopilotGenerator(BaseGenerator):
             # Merge with target-specific frontmatter
             frontmatter.update(self._get_frontmatter(prompt.targets))
 
-            # Build content
-            lines = [
-                self.banner("html").strip(),
-                "",
-                "---",
-            ]
-            for key, value in frontmatter.items():
-                if isinstance(value, list):
-                    lines.append(f"{key}:")
-                    for item in value:
-                        lines.append(f"  - {item}")
-                else:
-                    lines.append(f"{key}: {value}")
-            lines.extend([
-                "---",
-                "",
-                f"Follow instructions in '{prompt.canonical_file}'.",
-                "",
-                f"See: [{prompt.id}](../../{prompt.canonical_file})",
-                "",
-            ])
-
-            content = "\n".join(lines)
+            # Render template
+            content = render_template(
+                "copilot/prompt.md.j2",
+                frontmatter=frontmatter,
+                canonical_file=prompt.canonical_file,
+                id=prompt.id,
+            )
 
             if not dry_run:
                 ensure_dir(prompt_path.parent)
@@ -178,33 +163,14 @@ class CopilotGenerator(BaseGenerator):
             # Merge with target-specific frontmatter
             frontmatter.update(self._get_frontmatter(agent.targets))
 
-            # Build content
-            lines = [
-                self.banner("html").strip(),
-                "",
-                "---",
-            ]
-            for key, value in frontmatter.items():
-                lines.append(f"{key}: {value}")
-            lines.extend([
-                "---",
-                "",
-            ])
-
-            if agent.prompt_file:
-                lines.extend([
-                    f"Follow instructions in '{agent.prompt_file}'.",
-                    "",
-                    f"See: [{agent.id}](../../{agent.prompt_file})",
-                    "",
-                ])
-            elif agent.prompt:
-                lines.extend([
-                    agent.prompt,
-                    "",
-                ])
-
-            content = "\n".join(lines)
+            # Render template
+            content = render_template(
+                "copilot/agent.md.j2",
+                frontmatter=frontmatter,
+                id=agent.id,
+                prompt_file=agent.prompt_file,
+                prompt=agent.prompt,
+            )
 
             if not dry_run:
                 ensure_dir(agent_path.parent)
@@ -242,24 +208,13 @@ class CopilotGenerator(BaseGenerator):
                 # Merge with target-specific frontmatter
                 frontmatter.update(self._get_frontmatter(instruction.targets))
 
-                # Build content
-                lines = [
-                    self.banner("html").strip(),
-                    "",
-                    "---",
-                ]
-                for key, value in frontmatter.items():
-                    lines.append(f"{key}: {value}")
-                lines.extend([
-                    "---",
-                    "",
-                    f"Follow instructions in '{instruction.canonical_file}'.",
-                    "",
-                    f"See: [{instruction.id}](../../{instruction.canonical_file})",
-                    "",
-                ])
-
-                content = "\n".join(lines)
+                # Render template
+                content = render_template(
+                    "copilot/instruction.md.j2",
+                    frontmatter=frontmatter,
+                    id=instruction.id,
+                    canonical_file=instruction.canonical_file,
+                )
 
                 if not dry_run:
                     ensure_dir(instruction_path.parent)
@@ -269,24 +224,21 @@ class CopilotGenerator(BaseGenerator):
 
         # Generate repo-wide instructions file
         if repo_instruction_refs:
-            lines = [
-                self.banner("html").strip(),
-                "",
-                "# Repository Instructions",
-                "",
+            # Prepare instructions with formatted titles
+            instructions_with_titles = [
+                {
+                    "id": inst.id,
+                    "title": inst.id.replace("-", " ").title(),
+                    "canonical_file": inst.canonical_file,
+                }
+                for inst in repo_instruction_refs
             ]
-
-            for instruction in repo_instruction_refs:
-                lines.extend([
-                    f"## {instruction.id.replace('-', ' ').title()}",
-                    "",
-                    f"Follow instructions in '{instruction.canonical_file}'.",
-                    "",
-                    f"See: [{instruction.id}](../../{instruction.canonical_file})",
-                    "",
-                ])
-
-            content = "\n".join(lines)
+            
+            # Render template
+            content = render_template(
+                "copilot/copilot-instructions.md.j2",
+                instructions=instructions_with_titles,
+            )
 
             if not dry_run:
                 ensure_dir(repo_instructions_path.parent)
@@ -314,24 +266,13 @@ class CopilotGenerator(BaseGenerator):
                 "description": skill.description or f"{skill.id} skill",
             }
 
-            # Build content
-            lines = [
-                self.banner("html").strip(),
-                "",
-                "---",
-            ]
-            for key, value in frontmatter.items():
-                lines.append(f"{key}: {value}")
-            lines.extend([
-                "---",
-                "",
-                f"Follow instructions in '{skill.skill_file}'.",
-                "",
-                f"See: [{skill.id}](../../../{skill.skill_file})",
-                "",
-            ])
-
-            content = "\n".join(lines)
+            # Render template
+            content = render_template(
+                "copilot/skill.md.j2",
+                frontmatter=frontmatter,
+                id=skill.id,
+                skill_file=skill.skill_file,
+            )
 
             if not dry_run:
                 ensure_dir(skill_path.parent)
