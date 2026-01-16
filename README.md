@@ -33,6 +33,7 @@ agent-scaffold init
 agent-scaffold add-agent reviewer --description "Code review specialist"
 agent-scaffold add-prompt explain-code --title "Explain Code"
 agent-scaffold add-instruction typescript --scope path --apply-to "**/*.ts"
+agent-scaffold add-command test --description "Run test suite"
 
 # Generate target files
 agent-scaffold sync
@@ -50,6 +51,7 @@ your-project/
 ├── .agents/
 │   ├── manifest.yaml       # Central configuration
 │   ├── prompts/            # Prompt templates
+│   ├── commands/           # OpenCode slash commands
 │   ├── agents/             # Agent definitions
 │   ├── instructions/       # Instruction files
 │   └── skills/             # Skill bundles
@@ -71,6 +73,7 @@ your-project/
 | `add-agent <id>` | Add a new agent |
 | `add-instruction <id>` | Add a new instruction |
 | `add-skill <id>` | Add a new skill |
+| `add-command <id>` | Add a new OpenCode slash command |
 | `sync` | Generate target files |
 | `doctor` | Validate configuration |
 

@@ -54,6 +54,7 @@ def init_cmd(ctx: click.Context, name: str | None, force: bool) -> None:
     agents_dir = root / ".agents"
     dirs_to_create = [
         agents_dir / "prompts",
+        agents_dir / "commands",
         agents_dir / "agents",
         agents_dir / "instructions",
         agents_dir / "skills",

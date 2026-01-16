@@ -12,6 +12,7 @@ from agent_scaffold.manifest import (
 )
 from agent_scaffold.models import (
     AgentArtifact,
+    CommandArtifact,
     CopilotTargetOverride,
     InstructionArtifact,
     InstructionScope,
@@ -403,3 +404,81 @@ description: {skill_description}
     console.print()
     console.print(f"Edit [cyan]{skill_file.relative_to(root)}[/cyan] to define your skill.")
     console.print("Run [yellow]agent-scaffold sync[/yellow] to generate target files.")
+
+
+# =============================================================================
+# add-command
+# =============================================================================
+
+
+@click.command("add-command")
+@click.argument("artifact_id")
+@click.option("--description", "-d", type=str, default="", help="Short description for the command")
+@click.option(
+    "--user-input",
+    type=click.Choice(["required", "optional", "none"]),
+    default="optional",
+    help="Whether command requires user input",
+)
+@click.pass_context
+def add_command(
+    ctx: click.Context,
+    artifact_id: str,
+    description: str,
+    user_input: str,
+) -> None:
+    """Add a new OpenCode slash command.
+
+    Creates .agents/commands/<ID>.md and registers it in the manifest.
+    After syncing, the command will be available as /<ID> in OpenCode.
+
+    Example:
+        agent-scaffold add-command test --description "Run test suite"
+    """
+    root: Path = ctx.obj["root"]
+
+    validate_id(artifact_id)
+
+    try:
+        manifest = load_manifest(root)
+    except ManifestNotFoundError as e:
+        console.print(f"[red]Error:[/red] {e}")
+        raise SystemExit(1)
+
+    check_id_exists(manifest, "commands", artifact_id)
+
+    # Create canonical file
+    canonical_path = root / manifest.paths.commands_dir / f"{artifact_id}.md"
+    ensure_dir(canonical_path.parent)
+
+    command_description = description or "Description of what this command does."
+    canonical_content = f"""# /{artifact_id}
+
+{command_description}
+
+## Instructions
+
+<!-- Add command instructions here -->
+<!-- Use $INPUT to reference user input if user-input is required/optional -->
+
+Run the appropriate action for this command.
+"""
+    canonical_path.write_text(canonical_content, encoding="utf-8")
+    console.print(f"Created [cyan]{canonical_path.relative_to(root)}[/cyan]")
+
+    # Add to manifest
+    artifact = CommandArtifact(
+        id=artifact_id,
+        canonical_file=str(canonical_path.relative_to(root)).replace("\\", "/"),
+        description=description,
+        user_input=user_input,  # type: ignore
+    )
+    manifest.artifacts.commands.append(artifact)
+
+    # Save manifest
+    save_manifest(root, manifest)
+    console.print(f"Added command [green]/{artifact_id}[/green] to manifest")
+    console.print()
+    console.print(f"Edit [cyan]{canonical_path.relative_to(root)}[/cyan] to add your command content.")
+    console.print("Run [yellow]agent-scaffold sync[/yellow] to update opencode.json.")
+
