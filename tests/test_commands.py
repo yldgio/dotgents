@@ -38,7 +38,9 @@ class TestInitCommand:
             manifest = load_manifest(Path("."))
             assert manifest.project.name == "my-project"
 
-    def test_init_creates_sample_instruction(self, cli_runner: CliRunner, tmp_path: Path):
+    def test_init_creates_sample_instruction(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ):
         with cli_runner.isolated_filesystem(temp_dir=tmp_path):
             result = cli_runner.invoke(main, ["init"])
 
@@ -152,7 +154,8 @@ class TestAddAgentCommand:
         with cli_runner.isolated_filesystem(temp_dir=tmp_path):
             cli_runner.invoke(main, ["init"])
             cli_runner.invoke(
-                main, ["add-agent", "reviewer", "--description", "Code review specialist"]
+                main,
+                ["add-agent", "reviewer", "--description", "Code review specialist"],
             )
 
             manifest = load_manifest(Path("."))
@@ -305,7 +308,9 @@ class TestAddCommandCommand:
             assert cmd.id == "build"
             assert cmd.description == "Run build"
 
-    def test_add_command_user_input_required(self, cli_runner: CliRunner, tmp_path: Path):
+    def test_add_command_user_input_required(
+        self, cli_runner: CliRunner, tmp_path: Path
+    ):
         """Test command with required user input."""
         with cli_runner.isolated_filesystem(temp_dir=tmp_path):
             cli_runner.invoke(main, ["init"])
@@ -355,9 +360,7 @@ class TestAddCommandCommand:
             assert result.exit_code == 1
             assert "kebab-case" in result.output
 
-    def test_add_command_rejects_duplicate(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ):
+    def test_add_command_rejects_duplicate(self, cli_runner: CliRunner, tmp_path: Path):
         """Test that add-command rejects duplicate IDs."""
         with cli_runner.isolated_filesystem(temp_dir=tmp_path):
             cli_runner.invoke(main, ["init"])
@@ -467,19 +470,21 @@ class TestSyncCommand:
         """Test that sync includes commands in opencode.json."""
         with cli_runner.isolated_filesystem(temp_dir=tmp_path):
             cli_runner.invoke(main, ["init"])
-            cli_runner.invoke(
-                main, ["add-command", "test", "-d", "Run tests"]
-            )
+            cli_runner.invoke(main, ["add-command", "test", "-d", "Run tests"])
             result = cli_runner.invoke(main, ["sync", "--target", "opencode"])
 
             assert result.exit_code == 0
             assert (Path("opencode.json")).exists()
 
             import json
+
             config = json.loads(Path("opencode.json").read_text())
             assert "command.test" in config
             assert config["command.test"]["description"] == "Run tests"
-            assert config["command.test"]["template"]["file"] == "./.agents/commands/test.md"
+            assert (
+                config["command.test"]["template"]["file"]
+                == "./.agents/commands/test.md"
+            )
 
     def test_sync_generates_command_with_user_input(
         self, cli_runner: CliRunner, tmp_path: Path
@@ -503,6 +508,7 @@ class TestSyncCommand:
             assert result.exit_code == 0
 
             import json
+
             config = json.loads(Path("opencode.json").read_text())
             assert "command.search" in config
             assert config["command.search"]["userInput"] == "required"
@@ -519,13 +525,12 @@ class TestSyncCommand:
             assert result.exit_code == 0
 
             import json
+
             config = json.loads(Path("opencode.json").read_text())
             assert "command.build" in config
             assert "userInput" not in config["command.build"]
 
-    def test_sync_multiple_commands_sorted(
-        self, cli_runner: CliRunner, tmp_path: Path
-    ):
+    def test_sync_multiple_commands_sorted(self, cli_runner: CliRunner, tmp_path: Path):
         """Test that sync generates multiple commands in sorted order."""
         with cli_runner.isolated_filesystem(temp_dir=tmp_path):
             cli_runner.invoke(main, ["init"])
@@ -537,8 +542,9 @@ class TestSyncCommand:
             assert result.exit_code == 0
 
             import json
+
             config = json.loads(Path("opencode.json").read_text())
-            command_keys = [k for k in config.keys() if k.startswith("command.")]
+            command_keys = [k for k in config if k.startswith("command.")]
             # Commands should be sorted alphabetically
             assert command_keys == ["command.alpha", "command.beta", "command.zebra"]
 

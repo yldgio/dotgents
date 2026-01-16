@@ -7,8 +7,6 @@ import pytest
 import yaml
 
 from agent_scaffold.manifest import (
-    MANIFEST_JSON,
-    MANIFEST_YAML,
     ManifestNotFoundError,
     ManifestValidationError,
     create_default_manifest,
@@ -53,7 +51,9 @@ class TestFindManifest:
         yaml_path = agents_dir / "manifest.yaml"
         json_path = agents_dir / "manifest.json"
         yaml_path.write_text("schemaVersion: 1\nproject:\n  name: yaml-project")
-        json_path.write_text('{"schemaVersion": 1, "project": {"name": "json-project"}}')
+        json_path.write_text(
+            '{"schemaVersion": 1, "project": {"name": "json-project"}}'
+        )
 
         result = find_manifest(tmp_path)
         assert result == yaml_path
@@ -179,11 +179,15 @@ class TestSaveManifest:
         data = yaml.safe_load(content)
 
         # None values should be excluded
-        assert "description" not in data["project"] or data["project"]["description"] == ""
+        assert (
+            "description" not in data["project"] or data["project"]["description"] == ""
+        )
 
     def test_save_and_reload_roundtrip(self, tmp_path: Path):
         original = Manifest(
-            project=ProjectConfig(name="roundtrip-test", description="Testing roundtrip"),
+            project=ProjectConfig(
+                name="roundtrip-test", description="Testing roundtrip"
+            ),
             targets={
                 "opencode": OpenCodeTarget(kind=TargetKind.OPENCODE, enabled=True),
             },

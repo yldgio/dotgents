@@ -8,7 +8,7 @@ _template_env: Environment | None = None
 
 def get_template_env() -> Environment:
     """Get Jinja2 environment with package templates.
-    
+
     Returns:
         Configured Jinja2 environment
     """
@@ -25,11 +25,11 @@ def get_template_env() -> Environment:
 
 def render_template(template_path: str, **context: object) -> str:
     """Render a template with the given context.
-    
+
     Args:
         template_path: Path to template file (relative to templates directory)
         **context: Template context variables
-    
+
     Returns:
         Rendered template content
     """

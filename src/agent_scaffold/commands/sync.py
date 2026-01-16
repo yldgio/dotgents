@@ -4,7 +4,6 @@ from pathlib import Path
 
 import click
 from rich.console import Console
-from rich.table import Table
 
 from agent_scaffold.generators import get_generator
 from agent_scaffold.manifest import ManifestNotFoundError, load_manifest
@@ -51,7 +50,7 @@ def sync_cmd(
         manifest = load_manifest(root)
     except ManifestNotFoundError as e:
         console.print(f"[red]Error:[/red] {e}")
-        raise SystemExit(1)
+        raise SystemExit(1) from None
 
     if dry_run:
         console.print("[yellow]Dry run mode - no files will be written[/yellow]")
@@ -69,7 +68,7 @@ def sync_cmd(
         targets_to_sync = [t for t, cfg in manifest.targets.items() if cfg.enabled]
 
     all_generated: list[Path] = []
-    
+
     # Process each target
     for target_name in targets_to_sync:
         target_config = manifest.targets[target_name]
@@ -77,7 +76,9 @@ def sync_cmd(
 
         generator = get_generator(target_name, target_config, manifest, root)
         if generator is None:
-            console.print(f"  [yellow]No generator for target kind: {target_config.kind}[/yellow]")
+            console.print(
+                f"  [yellow]No generator for target kind: {target_config.kind}[/yellow]"
+            )
             continue
 
         generated = generator.generate(dry_run=dry_run)
@@ -94,10 +95,10 @@ def sync_cmd(
     # Handle pruning - remove files that were previously generated but no longer needed
     if prune:
         from agent_scaffold.generators import load_generated_tracking
-        
+
         previous = load_generated_tracking(root)
         stale = previous - current
-        
+
         if stale:
             console.print()
             console.print("Pruning stale files...")
@@ -115,6 +116,7 @@ def sync_cmd(
     # Always save tracking file (unless dry-run)
     if not dry_run:
         from agent_scaffold.generators import save_generated_tracking
+
         save_generated_tracking(root, current)
 
     # Summary

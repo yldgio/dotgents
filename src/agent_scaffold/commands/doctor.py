@@ -30,7 +30,9 @@ def check_manifest_exists(root: Path) -> DoctorCheck:
     """Check if manifest file exists."""
     manifest_path = find_manifest(root)
     if manifest_path:
-        return DoctorCheck("Manifest exists", True, str(manifest_path.relative_to(root)))
+        return DoctorCheck(
+            "Manifest exists", True, str(manifest_path.relative_to(root))
+        )
     return DoctorCheck("Manifest exists", False, "No manifest found")
 
 
@@ -127,7 +129,9 @@ def check_ids_kebab_case(root: Path) -> DoctorCheck:
                 invalid.append(artifact.id)
 
     if invalid:
-        return DoctorCheck("IDs kebab-case", False, f"Invalid IDs: {', '.join(invalid)}")
+        return DoctorCheck(
+            "IDs kebab-case", False, f"Invalid IDs: {', '.join(invalid)}"
+        )
     return DoctorCheck("IDs kebab-case", True)
 
 

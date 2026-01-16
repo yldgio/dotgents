@@ -1,10 +1,13 @@
 """OpenCode target generator."""
 
+from __future__ import annotations
+
 import json
 from pathlib import Path
+from typing import Any
 
 from agent_scaffold.generators.base import BaseGenerator
-from agent_scaffold.models import OpenCodeTarget
+from agent_scaffold.models import OpenCodeTarget, OpenCodeTargetOverride
 from agent_scaffold.templates import render_template
 from agent_scaffold.utils import ensure_dir
 
@@ -20,14 +23,14 @@ class OpenCodeGenerator(BaseGenerator):
     def list_generated_files(self) -> list[Path]:
         """List all files this generator would create."""
         files = []
-        
+
         # opencode.json
         files.append(self.root / self.config.config_file)
-        
+
         # AGENTS.md (if we're generating it - check if it's a "rules" project)
         # For now, we always generate it
         files.append(self.root / self.config.rules_index_file)
-        
+
         return files
 
     def generate(self, dry_run: bool = False) -> list[Path]:
@@ -51,7 +54,7 @@ class OpenCodeGenerator(BaseGenerator):
         config_path = self.root / self.config.config_file
 
         # Build the configuration object
-        config: dict = {
+        config: dict[str, Any] = {
             "$schema": "https://opencode.ai/config.json",
         }
 
@@ -72,7 +75,7 @@ class OpenCodeGenerator(BaseGenerator):
 
             # Build command config
             command_key = f"command.{command.id}"
-            command_config: dict = {
+            command_config: dict[str, Any] = {
                 "description": command.description,
                 "template": {"file": f"./{command.canonical_file}"},
             }
@@ -88,28 +91,29 @@ class OpenCodeGenerator(BaseGenerator):
             # Check if this agent is enabled for opencode
             agent_targets = agent.targets
             if "opencode" in agent_targets:
-                override = agent_targets["opencode"]
-                if not override.enabled:
+                agent_override = agent_targets["opencode"]
+                if not agent_override.enabled:
                     continue
-            
+
             # Build agent config
             agent_key = f"agent.{agent.id}"
-            agent_config: dict = {}
-            
+            agent_config: dict[str, Any] = {}
+
             if agent.prompt_file:
                 agent_config["prompt"] = {"file": f"./{agent.prompt_file}"}
-            
+
             # Add overrides if present
             if "opencode" in agent_targets:
-                override = agent_targets["opencode"]
-                if hasattr(override, "model") and override.model:
-                    agent_config["model"] = override.model
-                if hasattr(override, "mode") and override.mode:
-                    agent_config["mode"] = override.mode
-                if hasattr(override, "temperature") and override.temperature is not None:
-                    agent_config["temperature"] = override.temperature
-                if hasattr(override, "steps") and override.steps is not None:
-                    agent_config["steps"] = override.steps
+                oc_override = agent_targets["opencode"]
+                if isinstance(oc_override, OpenCodeTargetOverride):
+                    if oc_override.model:
+                        agent_config["model"] = oc_override.model
+                    if oc_override.mode:
+                        agent_config["mode"] = oc_override.mode
+                    if oc_override.temperature is not None:
+                        agent_config["temperature"] = oc_override.temperature
+                    if oc_override.steps is not None:
+                        agent_config["steps"] = oc_override.steps
 
             if agent_config:
                 config[agent_key] = agent_config
@@ -127,14 +131,16 @@ class OpenCodeGenerator(BaseGenerator):
 
         # Prepare data for template - filter by opencode enablement
         instructions_data = []
-        for instruction in sorted(self.manifest.artifacts.instructions, key=lambda i: i.id):
+        for instruction in sorted(
+            self.manifest.artifacts.instructions, key=lambda i: i.id
+        ):
             # Check if this instruction is enabled for opencode
             if "opencode" in instruction.targets:
                 override = instruction.targets["opencode"]
                 if not override.enabled:
                     continue
             instructions_data.append(instruction)
-        
+
         agents_data = []
         for agent in sorted(self.manifest.artifacts.agents, key=lambda a: a.id):
             # Check if this agent is enabled for opencode

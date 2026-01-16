@@ -88,6 +88,57 @@ your-project/
 
 See [IMPLEMENTATION.md](IMPLEMENTATION.md) for detailed implementation guide.
 
+## Development
+
+### Setup
+
+```bash
+# Clone and install in development mode
+git clone https://github.com/yldgio/dotgents.git
+cd dotgents
+uv venv
+uv pip install -e ".[dev]"
+```
+
+### Code Quality
+
+This project uses `ruff` for linting/formatting and `mypy` for type checking:
+
+```bash
+# Run linter
+ruff check src/ tests/
+
+# Auto-fix linting issues
+ruff check src/ tests/ --fix
+
+# Format code
+ruff format src/ tests/
+
+# Check formatting (CI mode)
+ruff format --check src/ tests/
+
+# Type checking
+mypy src/
+```
+
+### Testing
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run with coverage
+pytest tests/ --cov=src/agent_scaffold
+```
+
+### All Checks
+
+Run all quality checks before committing:
+
+```bash
+ruff check src/ tests/ && ruff format --check src/ tests/ && mypy src/ && pytest tests/
+```
+
 ## License
 
 MIT

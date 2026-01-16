@@ -1,6 +1,7 @@
 """add-* commands - Add new artifacts to the manifest."""
 
 from pathlib import Path
+from typing import Any
 
 import click
 from rich.console import Console
@@ -16,6 +17,7 @@ from agent_scaffold.models import (
     CopilotTargetOverride,
     InstructionArtifact,
     InstructionScope,
+    Manifest,
     OpenCodeTargetOverride,
     PromptArtifact,
     SkillArtifact,
@@ -36,7 +38,7 @@ def validate_id(artifact_id: str) -> None:
         raise SystemExit(1)
 
 
-def check_id_exists(manifest, artifact_type: str, artifact_id: str) -> None:
+def check_id_exists(manifest: Manifest, artifact_type: str, artifact_id: str) -> None:
     """Check if an artifact ID already exists in the manifest."""
     artifacts = getattr(manifest.artifacts, artifact_type, [])
     for artifact in artifacts:
@@ -85,7 +87,7 @@ def add_prompt(
         manifest = load_manifest(root)
     except ManifestNotFoundError as e:
         console.print(f"[red]Error:[/red] {e}")
-        raise SystemExit(1)
+        raise SystemExit(1) from None
 
     check_id_exists(manifest, "prompts", artifact_id)
 
@@ -103,7 +105,7 @@ def add_prompt(
     console.print(f"Created [cyan]{canonical_path.relative_to(root)}[/cyan]")
 
     # Build frontmatter for Copilot target
-    frontmatter: dict = {"name": artifact_id}
+    frontmatter: dict[str, Any] = {"name": artifact_id}
     if description:
         frontmatter["description"] = description
     if agent:
@@ -117,7 +119,9 @@ def add_prompt(
         description=description,
         default_agent=agent,
         targets={
-            "copilot-vscode": CopilotTargetOverride(enabled=True, frontmatter=frontmatter),
+            "copilot-vscode": CopilotTargetOverride(
+                enabled=True, frontmatter=frontmatter
+            ),
         },
     )
     manifest.artifacts.prompts.append(artifact)
@@ -126,7 +130,9 @@ def add_prompt(
     save_manifest(root, manifest)
     console.print(f"Added prompt [green]{artifact_id}[/green] to manifest")
     console.print()
-    console.print(f"Edit [cyan]{canonical_path.relative_to(root)}[/cyan] to add your prompt content.")
+    console.print(
+        f"Edit [cyan]{canonical_path.relative_to(root)}[/cyan] to add your prompt content."
+    )
     console.print("Run [yellow]agent-scaffold sync[/yellow] to generate target files.")
 
 
@@ -171,7 +177,7 @@ def add_agent(
         manifest = load_manifest(root)
     except ManifestNotFoundError as e:
         console.print(f"[red]Error:[/red] {e}")
-        raise SystemExit(1)
+        raise SystemExit(1) from None
 
     check_id_exists(manifest, "agents", artifact_id)
 
@@ -180,7 +186,7 @@ def add_agent(
     ensure_dir(canonical_path.parent)
 
     agent_description = description or f"{artifact_id.replace('-', ' ').title()} agent"
-    canonical_content = f"""# {artifact_id.replace('-', ' ').title()} Agent
+    canonical_content = f"""# {artifact_id.replace("-", " ").title()} Agent
 
 {agent_description}
 
@@ -197,13 +203,17 @@ def add_agent(
     console.print(f"Created [cyan]{canonical_path.relative_to(root)}[/cyan]")
 
     # Build targets
-    targets: dict = {}
+    targets: dict[str, OpenCodeTargetOverride | CopilotTargetOverride] = {}
     if not copilot_only:
         targets["opencode"] = OpenCodeTargetOverride(enabled=True)
     if not opencode_only:
         frontmatter = {"name": artifact_id, "description": agent_description}
-        targets["copilot-vscode"] = CopilotTargetOverride(enabled=True, frontmatter=frontmatter)
-        targets["copilot-cli"] = CopilotTargetOverride(enabled=True, frontmatter=frontmatter)
+        targets["copilot-vscode"] = CopilotTargetOverride(
+            enabled=True, frontmatter=frontmatter
+        )
+        targets["copilot-cli"] = CopilotTargetOverride(
+            enabled=True, frontmatter=frontmatter
+        )
 
     # Add to manifest
     artifact = AgentArtifact(
@@ -218,7 +228,9 @@ def add_agent(
     save_manifest(root, manifest)
     console.print(f"Added agent [green]{artifact_id}[/green] to manifest")
     console.print()
-    console.print(f"Edit [cyan]{canonical_path.relative_to(root)}[/cyan] to define your agent.")
+    console.print(
+        f"Edit [cyan]{canonical_path.relative_to(root)}[/cyan] to define your agent."
+    )
     console.print("Run [yellow]agent-scaffold sync[/yellow] to generate target files.")
 
 
@@ -270,7 +282,7 @@ def add_instruction(
         manifest = load_manifest(root)
     except ManifestNotFoundError as e:
         console.print(f"[red]Error:[/red] {e}")
-        raise SystemExit(1)
+        raise SystemExit(1) from None
 
     check_id_exists(manifest, "instructions", artifact_id)
 
@@ -279,7 +291,9 @@ def add_instruction(
     ensure_dir(canonical_path.parent)
 
     title = artifact_id.replace("-", " ").title()
-    scope_text = "repository-wide" if scope == "repo" else f"files matching `{apply_to}`"
+    scope_text = (
+        "repository-wide" if scope == "repo" else f"files matching `{apply_to}`"
+    )
     canonical_content = f"""# {title} Instructions
 
 These instructions apply to {scope_text}.
@@ -316,7 +330,9 @@ These instructions apply to {scope_text}.
     save_manifest(root, manifest)
     console.print(f"Added instruction [green]{artifact_id}[/green] to manifest")
     console.print()
-    console.print(f"Edit [cyan]{canonical_path.relative_to(root)}[/cyan] to add your instructions.")
+    console.print(
+        f"Edit [cyan]{canonical_path.relative_to(root)}[/cyan] to add your instructions."
+    )
     console.print("Run [yellow]agent-scaffold sync[/yellow] to generate target files.")
 
 
@@ -349,7 +365,7 @@ def add_skill(
         manifest = load_manifest(root)
     except ManifestNotFoundError as e:
         console.print(f"[red]Error:[/red] {e}")
-        raise SystemExit(1)
+        raise SystemExit(1) from None
 
     check_id_exists(manifest, "skills", artifact_id)
 
@@ -402,7 +418,9 @@ description: {skill_description}
     save_manifest(root, manifest)
     console.print(f"Added skill [green]{artifact_id}[/green] to manifest")
     console.print()
-    console.print(f"Edit [cyan]{skill_file.relative_to(root)}[/cyan] to define your skill.")
+    console.print(
+        f"Edit [cyan]{skill_file.relative_to(root)}[/cyan] to define your skill."
+    )
     console.print("Run [yellow]agent-scaffold sync[/yellow] to generate target files.")
 
 
@@ -413,7 +431,13 @@ description: {skill_description}
 
 @click.command("add-command")
 @click.argument("artifact_id")
-@click.option("--description", "-d", type=str, default="", help="Short description for the command")
+@click.option(
+    "--description",
+    "-d",
+    type=str,
+    default="",
+    help="Short description for the command",
+)
 @click.option(
     "--user-input",
     type=click.Choice(["required", "optional", "none"]),
@@ -443,7 +467,7 @@ def add_command(
         manifest = load_manifest(root)
     except ManifestNotFoundError as e:
         console.print(f"[red]Error:[/red] {e}")
-        raise SystemExit(1)
+        raise SystemExit(1) from None
 
     check_id_exists(manifest, "commands", artifact_id)
 
@@ -471,7 +495,7 @@ Run the appropriate action for this command.
         id=artifact_id,
         canonical_file=str(canonical_path.relative_to(root)).replace("\\", "/"),
         description=description,
-        user_input=user_input,  # type: ignore
+        user_input=user_input,
     )
     manifest.artifacts.commands.append(artifact)
 
@@ -479,6 +503,7 @@ Run the appropriate action for this command.
     save_manifest(root, manifest)
     console.print(f"Added command [green]/{artifact_id}[/green] to manifest")
     console.print()
-    console.print(f"Edit [cyan]{canonical_path.relative_to(root)}[/cyan] to add your command content.")
+    console.print(
+        f"Edit [cyan]{canonical_path.relative_to(root)}[/cyan] to add your command content."
+    )
     console.print("Run [yellow]agent-scaffold sync[/yellow] to update opencode.json.")
-

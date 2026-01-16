@@ -70,11 +70,17 @@ def sample_manifest(tmp_project: Path):
                 "opencode": OpenCodeTargetOverride(enabled=True),
                 "copilot-vscode": CopilotTargetOverride(
                     enabled=True,
-                    frontmatter={"name": "reviewer", "description": "Code review specialist"},
+                    frontmatter={
+                        "name": "reviewer",
+                        "description": "Code review specialist",
+                    },
                 ),
                 "copilot-cli": CopilotTargetOverride(
                     enabled=True,
-                    frontmatter={"name": "reviewer", "description": "Code review specialist"},
+                    frontmatter={
+                        "name": "reviewer",
+                        "description": "Code review specialist",
+                    },
                 ),
             },
         )
@@ -115,7 +121,9 @@ def sample_manifest(tmp_project: Path):
     skill_dir = tmp_project / ".agents/skills/api-builder"
     skill_dir.mkdir(parents=True)
     skill_file = skill_dir / "SKILL.md"
-    skill_file.write_text("---\nname: API Builder\ndescription: Build APIs\n---\n\n# API Builder")
+    skill_file.write_text(
+        "---\nname: API Builder\ndescription: Build APIs\n---\n\n# API Builder"
+    )
     manifest.artifacts.skills.append(
         SkillArtifact(
             id="api-builder",

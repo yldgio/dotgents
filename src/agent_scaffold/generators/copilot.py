@@ -1,9 +1,12 @@
 """Copilot target generator (VS Code and CLI)."""
 
+from __future__ import annotations
+
 from pathlib import Path
+from typing import Any
 
 from agent_scaffold.generators.base import BaseGenerator
-from agent_scaffold.models import CopilotTarget, InstructionScope
+from agent_scaffold.models import CopilotTarget, CopilotTargetOverride, InstructionScope
 from agent_scaffold.templates import render_template
 from agent_scaffold.utils import ensure_dir
 
@@ -29,12 +32,16 @@ class CopilotGenerator(BaseGenerator):
         if self.is_vscode and self.config.prompts_dir:
             for prompt in self.manifest.artifacts.prompts:
                 if self._is_enabled_for_target(prompt.targets):
-                    files.append(self.root / self.config.prompts_dir / f"{prompt.id}.prompt.md")
+                    files.append(
+                        self.root / self.config.prompts_dir / f"{prompt.id}.prompt.md"
+                    )
 
         # Agents
         for agent in self.manifest.artifacts.agents:
             if self._is_enabled_for_target(agent.targets):
-                files.append(self.root / self.config.agents_dir / f"{agent.id}.agent.md")
+                files.append(
+                    self.root / self.config.agents_dir / f"{agent.id}.agent.md"
+                )
 
         # Instructions
         for instruction in self.manifest.artifacts.instructions:
@@ -45,11 +52,17 @@ class CopilotGenerator(BaseGenerator):
                 else:
                     # Path-scoped instructions
                     files.append(
-                        self.root / self.config.instructions_dir / f"{instruction.id}.instructions.md"
+                        self.root
+                        / self.config.instructions_dir
+                        / f"{instruction.id}.instructions.md"
                     )
 
         # Repo instructions file
-        repo_instructions = [i for i in self.manifest.artifacts.instructions if i.scope == InstructionScope.REPO]
+        repo_instructions = [
+            i
+            for i in self.manifest.artifacts.instructions
+            if i.scope == InstructionScope.REPO
+        ]
         if repo_instructions:
             files.append(self.root / self.config.repo_instructions_file)
 
@@ -60,22 +73,26 @@ class CopilotGenerator(BaseGenerator):
 
         return files
 
-    def _is_enabled_for_target(self, targets: dict) -> bool:
+    def _is_enabled_for_target(
+        self, targets: dict[str, CopilotTargetOverride | Any]
+    ) -> bool:
         """Check if an artifact is enabled for this target."""
         if self.target_name not in targets:
             return True  # Default to enabled if not specified
         override = targets[self.target_name]
         if hasattr(override, "enabled"):
-            return override.enabled
+            return bool(override.enabled)
         return True
 
-    def _get_frontmatter(self, targets: dict) -> dict:
+    def _get_frontmatter(
+        self, targets: dict[str, CopilotTargetOverride | Any]
+    ) -> dict[str, Any]:
         """Get frontmatter overrides for this target."""
         if self.target_name not in targets:
             return {}
         override = targets[self.target_name]
         if hasattr(override, "frontmatter"):
-            return override.frontmatter
+            return dict(override.frontmatter)
         return {}
 
     def generate(self, dry_run: bool = False) -> list[Path]:
@@ -99,7 +116,7 @@ class CopilotGenerator(BaseGenerator):
 
     def _generate_prompts(self, dry_run: bool) -> list[Path]:
         """Generate prompt files."""
-        generated = []
+        generated: list[Path] = []
 
         if not self.config.prompts_dir:
             return generated
@@ -113,7 +130,7 @@ class CopilotGenerator(BaseGenerator):
             prompt_path = prompts_dir / f"{prompt.id}.prompt.md"
 
             # Build frontmatter
-            frontmatter = {"name": prompt.id}
+            frontmatter: dict[str, Any] = {"name": prompt.id}
             if prompt.description:
                 frontmatter["description"] = prompt.description
             if prompt.default_agent:
@@ -189,7 +206,9 @@ class CopilotGenerator(BaseGenerator):
 
         repo_instruction_refs = []
 
-        for instruction in sorted(self.manifest.artifacts.instructions, key=lambda i: i.id):
+        for instruction in sorted(
+            self.manifest.artifacts.instructions, key=lambda i: i.id
+        ):
             if not self._is_enabled_for_target(instruction.targets):
                 continue
 
@@ -198,7 +217,9 @@ class CopilotGenerator(BaseGenerator):
                 repo_instruction_refs.append(instruction)
             else:
                 # Path-scoped instruction
-                instruction_path = instructions_dir / f"{instruction.id}.instructions.md"
+                instruction_path = (
+                    instructions_dir / f"{instruction.id}.instructions.md"
+                )
 
                 # Build frontmatter
                 frontmatter = {}
@@ -233,7 +254,7 @@ class CopilotGenerator(BaseGenerator):
                 }
                 for inst in repo_instruction_refs
             ]
-            
+
             # Render template
             content = render_template(
                 "copilot/copilot-instructions.md.j2",

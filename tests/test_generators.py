@@ -3,8 +3,6 @@
 import json
 from pathlib import Path
 
-import pytest
-
 from agent_scaffold.generators import (
     get_generator,
     load_generated_tracking,
@@ -31,7 +29,9 @@ class TestGeneratorRegistry:
         manifest = load_manifest(tmp_project)
         target_config = manifest.targets["copilot-vscode"]
 
-        generator = get_generator("copilot-vscode", target_config, manifest, tmp_project)
+        generator = get_generator(
+            "copilot-vscode", target_config, manifest, tmp_project
+        )
 
         assert generator is not None
         assert isinstance(generator, CopilotGenerator)
@@ -109,7 +109,9 @@ class TestOpenCodeGenerator:
         assert "instructions" in config
         assert "agent.reviewer" in config
 
-    def test_generate_opencode_json_agent_config(self, sample_manifest, tmp_project: Path):
+    def test_generate_opencode_json_agent_config(
+        self, sample_manifest, tmp_project: Path
+    ):
         manifest = load_manifest(tmp_project)
         target_config = manifest.targets["opencode"]
         generator = OpenCodeGenerator("opencode", target_config, manifest, tmp_project)
@@ -192,7 +194,9 @@ class TestOpenCodeGenerator:
         config = json.loads((tmp_project / "opencode.json").read_text())
         assert "command.test" in config
         assert config["command.test"]["description"] == "Run tests"
-        assert config["command.test"]["template"]["file"] == "./.agents/commands/test.md"
+        assert (
+            config["command.test"]["template"]["file"] == "./.agents/commands/test.md"
+        )
         # Optional user input should not be included
         assert "userInput" not in config["command.test"]
 
@@ -223,7 +227,7 @@ class TestOpenCodeGenerator:
 
         # Verify order
         config = json.loads((tmp_project / "opencode.json").read_text())
-        command_keys = [k for k in config.keys() if k.startswith("command.")]
+        command_keys = [k for k in config if k.startswith("command.")]
         assert command_keys == ["command.alpha", "command.beta", "command.zebra"]
 
 
@@ -233,7 +237,9 @@ class TestCopilotGenerator:
     def test_list_generated_files_vscode(self, sample_manifest, tmp_project: Path):
         manifest = load_manifest(tmp_project)
         target_config = manifest.targets["copilot-vscode"]
-        generator = CopilotGenerator("copilot-vscode", target_config, manifest, tmp_project)
+        generator = CopilotGenerator(
+            "copilot-vscode", target_config, manifest, tmp_project
+        )
 
         files = generator.list_generated_files()
 
@@ -244,10 +250,14 @@ class TestCopilotGenerator:
         assert any("typescript.instructions.md" in f for f in file_strs)
         assert any("api-builder" in f and "SKILL.md" in f for f in file_strs)
 
-    def test_list_generated_files_cli_no_prompts(self, sample_manifest, tmp_project: Path):
+    def test_list_generated_files_cli_no_prompts(
+        self, sample_manifest, tmp_project: Path
+    ):
         manifest = load_manifest(tmp_project)
         target_config = manifest.targets["copilot-cli"]
-        generator = CopilotGenerator("copilot-cli", target_config, manifest, tmp_project)
+        generator = CopilotGenerator(
+            "copilot-cli", target_config, manifest, tmp_project
+        )
 
         files = generator.list_generated_files()
 
@@ -260,7 +270,9 @@ class TestCopilotGenerator:
     def test_generate_prompt_file(self, sample_manifest, tmp_project: Path):
         manifest = load_manifest(tmp_project)
         target_config = manifest.targets["copilot-vscode"]
-        generator = CopilotGenerator("copilot-vscode", target_config, manifest, tmp_project)
+        generator = CopilotGenerator(
+            "copilot-vscode", target_config, manifest, tmp_project
+        )
 
         generator.generate()
 
@@ -276,7 +288,9 @@ class TestCopilotGenerator:
     def test_generate_agent_file(self, sample_manifest, tmp_project: Path):
         manifest = load_manifest(tmp_project)
         target_config = manifest.targets["copilot-vscode"]
-        generator = CopilotGenerator("copilot-vscode", target_config, manifest, tmp_project)
+        generator = CopilotGenerator(
+            "copilot-vscode", target_config, manifest, tmp_project
+        )
 
         generator.generate()
 
@@ -291,7 +305,9 @@ class TestCopilotGenerator:
     def test_generate_instruction_file(self, sample_manifest, tmp_project: Path):
         manifest = load_manifest(tmp_project)
         target_config = manifest.targets["copilot-vscode"]
-        generator = CopilotGenerator("copilot-vscode", target_config, manifest, tmp_project)
+        generator = CopilotGenerator(
+            "copilot-vscode", target_config, manifest, tmp_project
+        )
 
         generator.generate()
 
@@ -307,7 +323,9 @@ class TestCopilotGenerator:
     def test_generate_repo_instructions(self, sample_manifest, tmp_project: Path):
         manifest = load_manifest(tmp_project)
         target_config = manifest.targets["copilot-vscode"]
-        generator = CopilotGenerator("copilot-vscode", target_config, manifest, tmp_project)
+        generator = CopilotGenerator(
+            "copilot-vscode", target_config, manifest, tmp_project
+        )
 
         generator.generate()
 
@@ -321,7 +339,9 @@ class TestCopilotGenerator:
     def test_generate_skill_file(self, sample_manifest, tmp_project: Path):
         manifest = load_manifest(tmp_project)
         target_config = manifest.targets["copilot-vscode"]
-        generator = CopilotGenerator("copilot-vscode", target_config, manifest, tmp_project)
+        generator = CopilotGenerator(
+            "copilot-vscode", target_config, manifest, tmp_project
+        )
 
         generator.generate()
 
@@ -335,7 +355,9 @@ class TestCopilotGenerator:
     def test_generate_dry_run(self, sample_manifest, tmp_project: Path):
         manifest = load_manifest(tmp_project)
         target_config = manifest.targets["copilot-vscode"]
-        generator = CopilotGenerator("copilot-vscode", target_config, manifest, tmp_project)
+        generator = CopilotGenerator(
+            "copilot-vscode", target_config, manifest, tmp_project
+        )
 
         files = generator.generate(dry_run=True)
 
@@ -349,7 +371,9 @@ class TestCopilotGenerator:
         manifest.artifacts.prompts[0].targets["copilot-vscode"].enabled = False
 
         target_config = manifest.targets["copilot-vscode"]
-        generator = CopilotGenerator("copilot-vscode", target_config, manifest, tmp_project)
+        generator = CopilotGenerator(
+            "copilot-vscode", target_config, manifest, tmp_project
+        )
 
         files = generator.list_generated_files()
         file_strs = [str(f) for f in files]

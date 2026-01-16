@@ -5,6 +5,16 @@ from pathlib import Path
 import click
 
 from agent_scaffold import __version__
+from agent_scaffold.commands.add import (
+    add_agent,
+    add_command,
+    add_instruction,
+    add_prompt,
+    add_skill,
+)
+from agent_scaffold.commands.doctor import doctor_cmd
+from agent_scaffold.commands.init import init_cmd
+from agent_scaffold.commands.sync import sync_cmd
 
 
 @click.group()
@@ -34,12 +44,7 @@ def main(ctx: click.Context, root: Path) -> None:
     ctx.obj["root"] = root
 
 
-# Import and register commands
-from agent_scaffold.commands.add import add_agent, add_command, add_instruction, add_prompt, add_skill
-from agent_scaffold.commands.doctor import doctor_cmd
-from agent_scaffold.commands.init import init_cmd
-from agent_scaffold.commands.sync import sync_cmd
-
+# Register commands
 main.add_command(init_cmd, name="init")
 main.add_command(add_prompt, name="add-prompt")
 main.add_command(add_agent, name="add-agent")

@@ -5,8 +5,16 @@ from pathlib import Path
 import click
 from rich.console import Console
 
-from agent_scaffold.manifest import create_default_manifest, find_manifest, save_manifest
-from agent_scaffold.models import CopilotTargetOverride, InstructionArtifact, InstructionScope
+from agent_scaffold.manifest import (
+    create_default_manifest,
+    find_manifest,
+    save_manifest,
+)
+from agent_scaffold.models import (
+    CopilotTargetOverride,
+    InstructionArtifact,
+    InstructionScope,
+)
 from agent_scaffold.utils import ensure_dir
 
 console = Console()
@@ -81,9 +89,7 @@ These are the default instructions for the {project_name} project.
 - Write tests for new functionality
 """
     sample_instruction_path.write_text(sample_instruction_content, encoding="utf-8")
-    console.print(
-        f"  Created [dim]{sample_instruction_path.relative_to(root)}[/dim]"
-    )
+    console.print(f"  Created [dim]{sample_instruction_path.relative_to(root)}[/dim]")
 
     # Add sample instruction to manifest
     manifest.artifacts.instructions.append(
@@ -106,6 +112,12 @@ These are the default instructions for the {project_name} project.
     console.print("[green]Success![/green] Agent scaffold initialized.")
     console.print()
     console.print("Next steps:")
-    console.print("  1. Edit [cyan].agents/instructions/repo-default.md[/cyan] with your guidelines")
-    console.print("  2. Add artifacts with [yellow]agent-scaffold add-*[/yellow] commands")
-    console.print("  3. Generate target files with [yellow]agent-scaffold sync[/yellow]")
+    console.print(
+        "  1. Edit [cyan].agents/instructions/repo-default.md[/cyan] with your guidelines"
+    )
+    console.print(
+        "  2. Add artifacts with [yellow]agent-scaffold add-*[/yellow] commands"
+    )
+    console.print(
+        "  3. Generate target files with [yellow]agent-scaffold sync[/yellow]"
+    )

@@ -102,3 +102,29 @@ Whenever you:
 - Make any architectural or design decision,
 
 **you must update this `AGENTS.md`** to reflect the change. Keep sections concise; link to `.github/prompts/plan-agent-scaffold.prompt.md` for detailed schema documentation.
+
+## Instructions for Updating This File
+
+**When to update AGENTS.md:**
+
+- New agent added or removed
+- Architecture changes (new services, patterns)
+- New security requirements
+- API endpoint changes
+- Key file locations change
+- New quality/security standards adopted
+
+**How to update:**
+
+1. Keep content concise (this file should be <150 lines)
+2. Use tables and code blocks for clarity
+3. Update "Last Updated" date
+4. Remove outdated information (don't accumulate)
+5. Focus on what an LLM needs to assist effectively
+
+**Do NOT include:**
+
+- Implementation details (reference source files instead)
+- Verbose explanations (link to PLAN.md for details)
+- Historical changes (use git history)
+- Sensitive values (keys, passwords)
