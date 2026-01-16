@@ -60,13 +60,35 @@ class OpenCodeGenerator(BaseGenerator):
         ]
         config["instructions"] = instructions_globs
 
+        # Add commands
+        for command in sorted(self.manifest.artifacts.commands, key=lambda c: c.id):
+            # Check if this command is enabled for opencode
+            command_targets = command.targets
+            if "opencode" in command_targets:
+                override = command_targets["opencode"]
+                if not override.enabled:
+                    continue
+
+            # Build command config
+            command_key = f"command.{command.id}"
+            command_config: dict = {
+                "description": command.description,
+                "template": {"file": f"./{command.canonical_file}"},
+            }
+
+            # Add user input requirement if not default
+            if command.user_input != "optional":
+                command_config["userInput"] = command.user_input
+
+            config[command_key] = command_config
+
         # Add agents
         for agent in sorted(self.manifest.artifacts.agents, key=lambda a: a.id):
             # Check if this agent is enabled for opencode
             agent_targets = agent.targets
             if "opencode" in agent_targets:
                 override = agent_targets["opencode"]
-                if hasattr(override, "enabled") and not override.enabled:
+                if not override.enabled:
                     continue
             
             # Build agent config
