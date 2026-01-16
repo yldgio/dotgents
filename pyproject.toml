@@ -45,9 +45,9 @@ dev = [
 agent-scaffold = "agent_scaffold.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/anomalyco/agent-scaffold"
-Documentation = "https://github.com/anomalyco/agent-scaffold#readme"
-Repository = "https://github.com/anomalyco/agent-scaffold"
+Homepage = "https://github.com/yldgio/dotgents"
+Documentation = "https://github.com/yldgio/dotgents#readme"
+Repository = "https://github.com/yldgio/dotgents"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/agent_scaffold"]

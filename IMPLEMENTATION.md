@@ -2,7 +2,7 @@
 
 > **Version:** 0.1.0 (MVP)  
 > **Package Manager:** uv  
-> **Distribution:** uvx agent-scaffold  
+> **Distribution:** GitHub (via uvx)  
 > **Python:** >=3.10
 
 ---
@@ -139,8 +139,11 @@ strict = true
 # Development install
 uv pip install -e ".[dev]"
 
-# Remote execution (after publishing)
-uvx agent-scaffold <command>
+# Run from GitHub via uvx
+uvx --from git+https://github.com/yldgio/dotgents agent-scaffold <command>
+
+# Install from GitHub
+uv pip install git+https://github.com/yldgio/dotgents
 ```
 
 ---

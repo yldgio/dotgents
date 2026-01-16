@@ -13,14 +13,29 @@ Multi-agent scaffold for AI coding assistants.
 ## Installation
 
 ```bash
-# Using uvx (recommended)
-uvx agent-scaffold <command>
+# Using uvx from GitHub (recommended)
+uvx --from git+https://github.com/yldgio/dotgents agent-scaffold <command>
 
-# Or install with uv
-uv pip install agent-scaffold
+# Install from GitHub with uv
+uv pip install git+https://github.com/yldgio/dotgents
 
-# Or install with pip
-pip install agent-scaffold
+# Install from GitHub with pip
+pip install git+https://github.com/yldgio/dotgents
+
+# For a specific version/tag
+uvx --from git+https://github.com/yldgio/dotgents@v0.1.0 agent-scaffold <command>
+```
+
+### Shell Alias (Optional)
+
+For convenience, add an alias to your shell configuration:
+
+```bash
+# ~/.bashrc or ~/.zshrc
+alias agent-scaffold='uvx --from git+https://github.com/yldgio/dotgents agent-scaffold'
+
+# Then use simply:
+agent-scaffold init
 ```
 
 ## Quick Start
@@ -137,6 +152,36 @@ Run all quality checks before committing:
 
 ```bash
 ruff check src/ tests/ && ruff format --check src/ tests/ && mypy src/ && pytest tests/
+```
+
+### CI/CD
+
+This project uses GitHub Actions for continuous integration:
+
+- **Test workflow** (`.github/workflows/test.yml`): Runs on every push and PR
+  - Linting with ruff
+  - Type checking with mypy
+  - Tests on Python 3.10, 3.11, 3.12
+
+- **Release workflow** (`.github/workflows/release.yml`): Runs on version tags
+  - Builds the package
+  - Creates GitHub release with artifacts
+
+### Creating a Release
+
+To create a new release:
+
+```bash
+# Update version in pyproject.toml and src/agent_scaffold/__init__.py
+# Then tag and push:
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Users can then install a specific version:
+
+```bash
+uvx --from git+https://github.com/yldgio/dotgents@v0.1.0 agent-scaffold init
 ```
 
 ## License
